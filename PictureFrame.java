@@ -1,8 +1,13 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,6 +16,7 @@ import java.util.Scanner;
 
 
 import javax.imageio.ImageIO;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -45,6 +51,7 @@ public class PictureFrame extends JFrame
 	private JPanel autoplayPanel;
 	
 	
+	
 	//folder search 
 	private JLabel folder;
 	private JTextField input;
@@ -69,7 +76,7 @@ public class PictureFrame extends JFrame
 		setSize(FRAME_WIDTH, FRAME_HEIGHT);
 	}
 	
-	/**
+	/**NAVIGATION BUTTONS
 	 * Action Listener for navigation buttons
 	 *
 	 */
@@ -77,8 +84,9 @@ public class PictureFrame extends JFrame
 	{
 		
 		public void actionPerformed(ActionEvent event) {
-
-			if (pictures != null)
+		
+			
+			if (pictures != null && !pictures.isEmpty())
 			{
 			//if user presses next button increment counter
 			if(event.getSource() == next)
@@ -117,7 +125,7 @@ public class PictureFrame extends JFrame
 
 	}
 	
-	/**
+	/**AUTOPLAY 
 	 * Change Listener for slider of autoplay timer
 	 *
 	 */
@@ -142,7 +150,7 @@ public class PictureFrame extends JFrame
 
 	}
 	
-	/**
+	/**TIMER
 	 * Action Listener for timer event
 	 *
 	 */
@@ -217,7 +225,7 @@ public class PictureFrame extends JFrame
 	}
 	
 	
-	/**
+	/**UPLOAD
 	 * Action Listener for upload button for searching folder
 	 *
 	 */
@@ -226,28 +234,27 @@ public class PictureFrame extends JFrame
 		public void actionPerformed(ActionEvent event) {
 			
 			//ensure user has typed something into field
+			pictures = new ArrayList<File>();
+				final JFileChooser fc = new JFileChooser();
+				fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+				int returnVal = fc.showOpenDialog(PictureFrame.this);
+			
+				if(returnVal == JFileChooser.APPROVE_OPTION) {
+					File myFile = fc.getSelectedFile();
 
-				if (!new File(input.getText()).exists())
-				{
-				   try {
-					throw new FileNotFoundException("File not found!");
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				}
-				}
-				//create a new File ArrayList to store picture Files
-				File myFile = new File(input.getText());
-				pictures = new ArrayList<File>();
-				for(int i = 0;i<myFile.listFiles().length;i++)
-				{
-					//check extension to see if it ends in .jpg and add to arrayList
-					String fileName = myFile.listFiles()[i].getName();
-					String fileExt = fileName.substring(fileName.length() - 4);
-					if(fileExt.equals(".jpg"))
+					for(int i = 0;i<myFile.listFiles().length;i++)
 					{
-						pictures.add(myFile.listFiles()[i]);
+						//check extension to see if it ends in .jpg and add to arrayList
+						String fileName = myFile.listFiles()[i].getName();
+						String fileExt = fileName.substring(fileName.length() - 4);
+						if(fileExt.equals(".jpg"))
+						{
+							pictures.add(myFile.listFiles()[i]);
+						}
 					}
+					
 				}
+				
 			
 
 			if (pictures.isEmpty())
@@ -276,6 +283,9 @@ public class PictureFrame extends JFrame
 		
 	}
 	
+	
+	
+	
 	/**
 	 * primary function for creating all components
 	 * @throws IOException
@@ -287,8 +297,8 @@ public class PictureFrame extends JFrame
 		topPanel.setLayout(new BorderLayout());
 		
 		//SIDE PANELS-NAVIGATION
-		next = new JButton("-->");
-		prev = new JButton("<--");
+		next = new JButton(">");
+		prev = new JButton("<");
 		next.addActionListener(new ClickListener());
 		prev.addActionListener(new ClickListener());
 		//add to major panel
@@ -299,8 +309,8 @@ public class PictureFrame extends JFrame
 		//UPPER PANEL-FOLDER SEARCH
 		JPanel searchPanel = new JPanel();
 		folder = new JLabel("Folder: ");
-		input = new JTextField("(ex. /users/daniel/sample pictures)",20);
-		load = new JButton("Load");
+		input = new JTextField(20);
+		load = new JButton("Open");
 		searchPanel.add(folder);
 		searchPanel.add(input);
 		searchPanel.add(load);
@@ -328,6 +338,7 @@ public class PictureFrame extends JFrame
 		showAllCheckBox.addActionListener(new showAllListener());
 		autoPlayCheckBox = new JCheckBox("Autoplay");
 		autoPlayCheckBox.addActionListener(new autoplayListener());
+
 		//slider and ticks
 		autoPlaySlider = new JSlider(0,10,0);
 		autoPlaySlider.setMajorTickSpacing(5);
@@ -343,6 +354,7 @@ public class PictureFrame extends JFrame
 		autoplayPanel.add(autoPlaySlider);
 		autoplayPanel.add(seconds);
 		autoplayPanel.add(showAllCheckBox);
+
 		//add to major panel
 		topPanel.add(autoplayPanel, BorderLayout.SOUTH);
 		
@@ -360,6 +372,10 @@ public class PictureFrame extends JFrame
 	{
 		Image img = ImageIO.read(imgFile);
 		label.setIcon(new ImageIcon(img.getScaledInstance(width,  height,  Image.SCALE_DEFAULT)));
+		
+		//label.setIcon(new ImageIcon(new ImageIcon("icon.png").getImage().getScaledInstance(20, 20, Image.SCALE_DEFAULT)));
+
+		
 	}
 
 	
